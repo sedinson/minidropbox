@@ -242,7 +242,7 @@ and open the template in the editor.
                                 
                                 $("<li/>").append(
                                     $("<a/>", {
-                                        href: 'javascript: F.get(' + ob.idfile + ')'
+                                        href: 'javascript: F.get(' + ob.idfile + ',"' + ob.filename + '")'
                                     }).append(
                                         $("<h2/>").html(ob.filename)
                                     ).append(
@@ -258,28 +258,36 @@ and open the template in the editor.
                         }
                     });
                 },
-                get: function (id) {
-                    var fileTransfer = new FileTransfer();
+                get: function (id, down) {
+                    //var fileTransfer = new FileTransfer();
                     var uri = encodeURI(LinkServer.Url('file', 'get', {
                         id: id
                     }));
+                    
+                    
+                    
+                    F.explorer.root.getFile(
+                        down, {create: true, exclusive: false}, 
+                        function gotFileEntry(fileEntry){
+                           var sPath = fileEntry.fullPath.replace(down, "");
+                           var fileTransfer = new FileTransfer();
+                           fileEntry.remove();
 
-                    fileTransfer.download(
-                        uri,
-                        F.explorer.root,
-                        function(entry) {
-                            alert("download complete: " + entry.fullPath);
-                        },
-                        function(error) {
-                            alert("download error source " + error.source);
-                            alert("download error target " + error.target);
-                            alert("upload error code" + error.code);
-                        },
-                        false,
-                        {
-                            headers: {}
-                        }
-                    );
+                           fileTransfer.download(
+                               uri,
+                               sPath + down,
+                               function(theFile) {
+                                   console.log("download complete: " + theFile.toURI());
+                                   showLink(theFile.toURI());
+                               },
+                               function(error) {
+                                   console.log("download error source " + error.source);
+                                   console.log("download error target " + error.target);
+                                   console.log("upload error code: " + error.code);
+                               }
+                           );
+                       }, 
+                    fail);
                 }
             };
             
