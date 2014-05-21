@@ -11,6 +11,7 @@ var DropBox = {
         console.log("Trying to read Connection Object...");
         if(Connection) {
             F.explorer.getFileSystem();
+            Pages.loading(true);
         } else {
             if(DropBox.errcounter < 10) {
                 DropBox.errcounter++;
