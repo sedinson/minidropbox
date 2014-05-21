@@ -72,6 +72,7 @@ and open the template in the editor.
         <script src="js/jquery.mobile-1.4.2.min.js"></script>
         <script src="js/modernizr.custom.js"></script>
         <script src="js/projectbase.js"></script>
+        <script src="js/index.js"></script>
         
         <script>
             var LinkServer = null;
@@ -79,6 +80,7 @@ and open the template in the editor.
             $(function () {
                 LinkServer = new Linker('http://192.227.159.91/file');
                 LinkServer.setExtension('.json?');
+                app.initialize();
             });
             
             var F = {
@@ -300,7 +302,5 @@ and open the template in the editor.
                 }
             };
         </script>
-        
-        <script src="js/index.js"></script>
     </body>
 </html>
