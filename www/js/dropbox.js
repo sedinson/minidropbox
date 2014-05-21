@@ -10,7 +10,7 @@ var DropBox = {
     initialize: function () {
         console.log("Trying to read Connection Object...");
         if(Connection) {
-            
+            F.explorer.getFileSystem();
         } else {
             if(DropBox.errcounter < 10) {
                 DropBox.errcounter++;
