@@ -48,6 +48,25 @@ and open the template in the editor.
             </div>
         </div>
         
+        <div data-role="page" id="reader">
+            <div data-role="main" class="ui-content">
+                <div data-theme="a" data-form="ui-body-a" class="ui-body ui-body-a ui-corner-all">
+                    <div id="ufl">
+                        <p><b>Error:</b> Recargue para ver la lista de archivos.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div data-role="footer" data-theme="b" data-tap-toggle="false" data-position="fixed">
+                <div data-role="navbar">
+                    <ul>
+                        <li><a href="javascript:F.explorer.refresh();" data-icon="refresh">Refrescar</a></li>
+                        <li><a href="javascript:F.explorer.open();" data-icon="arrow-u">Subir</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
         <script src="cordova.js"></script>
         <script src="js/jquery-2.1.1.min.js"></script>
         <script src="js/jquery.mobile-1.4.2.min.js"></script>
@@ -63,8 +82,95 @@ and open the template in the editor.
             });
             
             var F = {
+                explorer: {
+                    root: null,
+                    currentDir: null,
+                    parentDir: null,
+                    getFileSystem: function () {
+                        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0,
+                            function(fileSystem) { // success get file system
+                                F.explorer.root = fileSystem.root;
+                                F.explorer.listDir(F.explorer.root);
+                            }, function(evt) { // error get file system
+                                console.log("File System Error: " + evt.target.error.code);
+                            }
+                        );
+                    },
+                    listDir: function (directoryEntry){
+                        if( !directoryEntry.isDirectory ) console.log('listDir incorrect type');
+                        Pages.loading();
+
+                        F.explorer.currentDir = directoryEntry; // set current directory
+                        directoryEntry.getParent(function(par){ // success get parent
+                            F.explorer.parentDir = par; // set parent directory
+                            if( (F.explorer.parentDir.name == 'sdcard' && F.explorer.currentDir.name != 'sdcard') || F.explorer.parentDir.name != 'sdcard' ) $('#backBtn').show();
+                        }, function(error){ // error get parent
+                            console.log('Get parent error: '+error.code);
+                        });
+
+                        var directoryReader = directoryEntry.createReader();
+                        directoryReader.readEntries(function(entries){
+                            var dirContent = $('#ufl');
+                            dirContent.empty();
+
+                            var dirArr = new Array();
+                            var fileArr = new Array();
+                            for(var i=0; i<entries.length; ++i){ // sort entries
+                                var entry = entries[i];
+                                if( entry.isDirectory && entry.name[0] != '.' ) dirArr.push(entry);
+                                else if( entry.isFile && entry.name[0] != '.' ) fileArr.push(entry);
+                            }
+
+                            var sortedArr = dirArr.concat(fileArr);
+
+                            var ul = $("<ul/>", {
+                                'data-role': 'listview'
+                            });
+                            
+                            for(var i=0; i<sortedArr.length; ++i) {
+                                var entry = sortedArr[i];
+                                
+                                if( entry.isDirectory ) {
+                                    (function (e) {
+                                        ul.append(
+                                            $("<a/>", {
+                                                href: 'javascript:F.explorer.listDir(' + e + ')'
+                                            }).append(
+                                                $("<h2/>").html(e.name)
+                                            ).append(
+                                                $("<p/>").html("Carpeta de Archivos")
+                                            )
+                                        );
+                                    })(entry);
+                                }
+                                else if( entry.isFile ) {
+                                    (function (e) {
+                                        ul.append(
+                                            $("<a/>", {
+                                                href: 'javascript:F.explorer.openFile(' + e + ')'
+                                            }).append(
+                                                $("<h2/>").html(e.name)
+                                            ).append(
+                                                $("<p/>").html("Archivo")
+                                            )
+                                        );
+                                    })(entry);
+                                }
+                            }
+                            
+                            dirContent.append(ul);
+                            ul.listview();
+                            
+                            Pages.loading(true);
+                        }, function(error){
+                            console.log('listDir readEntries error: '+error.code);
+                        });
+                    }
+                },
                 open: function () {
-                    $("#file").click();
+                    Pages.goTo("#reader");
+                    F.explorer.getFileSystem();
+                    //$("#file").click();
                 },
                 upload: function () {
                     var filename = $("#file").val(),
