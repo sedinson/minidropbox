@@ -275,21 +275,28 @@ and open the template in the editor.
                     
                     
                     
-                    var fileTransfer = new FileTransfer();
+                    F.explorer.root.getFile(
+                        down, {create: true, exclusive: false}, 
+                        function (fileEntry) {
+                           var sPath = fileEntry.fullPath.replace(down, "");
+                           var fileTransfer = new FileTransfer();
+                           //fileEntry.remove();
 
-                    fileTransfer.download(
-                        uri,
-                        "",
-                        function(theFile) {
-                            console.log("download complete: " + theFile.toURI());
-                            showLink(theFile.toURI());
-                        },
-                        function(error) {
-                            console.log("download error source " + error.source);
-                            console.log("download error target " + error.target);
-                            console.log("upload error code: " + error.code);
-                        }
-                    );
+                           fileTransfer.download(
+                               uri,
+                               fileEntry,
+                               function(theFile) {
+                                   console.log("download complete: " + theFile.toURI());
+                                   showLink(theFile.toURI());
+                               },
+                               function(error) {
+                                   console.log("download error source " + error.source);
+                                   console.log("download error target " + error.target);
+                                   console.log("upload error code: " + error.code);
+                               }
+                           );
+                       }, 
+                    fail);
                 }
             };
             
