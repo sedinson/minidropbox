@@ -284,7 +284,7 @@ and open the template in the editor.
 
                            fileTransfer.download(
                                uri,
-                               fileEntry,
+                               fileEntry.fullPath,
                                function(theFile) {
                                    console.log("download complete: " + theFile.toURI());
                                    showLink(theFile.toURI());
