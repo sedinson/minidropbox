@@ -42,7 +42,7 @@ and open the template in the editor.
                 <div data-role="navbar">
                     <ul>
                         <li><a href="javascript:F.refresh();" data-icon="refresh">Refrescar</a></li>
-                        <li><a href="javascript:F.explorer.open();" data-icon="arrow-u">Subir</a></li>
+                        <li><a href="javascript:F.open();" data-icon="arrow-u">Subir</a></li>
                     </ul>
                 </div>
             </div>
@@ -98,6 +98,9 @@ and open the template in the editor.
                                 console.log("File System Error: " + evt.target.error.code);
                             }
                         );
+                    },
+                    refresh: function () {
+                        F.explorer.listDir(F.explorer.currentDir);
                     },
                     listDir: function (directoryEntry){
                         if( !directoryEntry.isDirectory ) console.log('listDir incorrect type');
