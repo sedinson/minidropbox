@@ -134,8 +134,13 @@ and open the template in the editor.
                                     (function (e) {
                                         ul.append(
                                             $("<a/>", {
-                                                href: 'javascript:F.explorer.listDir(' + e + ')'
-                                            }).append(
+                                                href: '#'
+                                            }).click(
+                                                function () {
+                                                    alert(e.name);
+                                                    F.explorer.listDir(e);
+                                                }
+                                            ).append(
                                                 $("<h2/>").html(e.name)
                                             ).append(
                                                 $("<p/>").html("Carpeta de Archivos")
@@ -159,7 +164,7 @@ and open the template in the editor.
                             }
                             
                             dirContent.append(ul);
-                            ul.listview();
+                            ul.listview("refresh");
                             
                             Pages.loading(true);
                         }, function(error){
