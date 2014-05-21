@@ -84,6 +84,15 @@ and open the template in the editor.
                 app.initialize();
             });
             
+            function showLink(url){
+                alert(url);
+            }
+
+
+            function fail(evt) {
+                console.log(evt.target.error.code);
+            }
+            
             var F = {
                 explorer: {
                     root: null,
