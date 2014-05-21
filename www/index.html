@@ -42,7 +42,7 @@ and open the template in the editor.
                 <div data-role="navbar">
                     <ul>
                         <li><a href="javascript:F.refresh();" data-icon="refresh">Refrescar</a></li>
-                        <li><a href="javascript:F.explorer.open();" data-icon="arrow-u">Subir</a></li>
+                        <li><a href="javascript:F.explorer.getFileSystem();" data-icon="arrow-u">Subir</a></li>
                     </ul>
                 </div>
             </div>
@@ -179,6 +179,9 @@ and open the template in the editor.
                         }, function(error){
                             console.log('listDir readEntries error: '+error.code);
                         });
+                    },
+                    openFile: function (file) {
+                        F.upload(file);
                     }
                 },
                 open: function () {
@@ -186,39 +189,37 @@ and open the template in the editor.
                     F.explorer.getFileSystem();
                     //$("#file").click();
                 },
-                upload: function () {
-                    var filename = $("#file").val(),
-                        file = document.querySelector('input[type=file]').files[0];
-                
-                    filename = filename.substr(filename.lastIndexOf('\\') + 1);
-                    
-                    var reader  = new FileReader();
-                    
-                    reader.onloadend = function () {
-                        Pages.loading();
-                        
-                        uget({
-                            type: 'POST',
-                            url: LinkServer.Url('file', 'upload', []),
-                            data: {
-                                file: reader.result.split(',')[1],
-                                mimetype: reader.result.substring(reader.result.indexOf(':')+1, reader.result.indexOf(';')),
-                                name: filename
-                            }
-                        }).done(function (data) {
-                            Pages.loading(true);
-                            if(data._code === 200) {
-                                alert("Archivo Subido");
-                                F.refresh();
-                            } else {
-                                alert(data._message);
-                            }
-                        });
-                    };
-                    
-                    if (file) {
-                        reader.readAsDataURL(file);
-                    }
+                upload: function (file) {
+                    file.file(function (file) {
+                        var reader  = new FileReader();
+
+                        reader.onloadend = function () {
+                            Pages.goTo("#files");
+                            Pages.loading();
+
+                            uget({
+                                type: 'POST',
+                                url: LinkServer.Url('file', 'upload', []),
+                                data: {
+                                    file: reader.result.split(',')[1],
+                                    mimetype: reader.result.substring(reader.result.indexOf(':')+1, reader.result.indexOf(';')),
+                                    name: file.name
+                                }
+                            }).done(function (data) {
+                                Pages.loading(true);
+                                if(data._code === 200) {
+                                    alert("Archivo Subido");
+                                    F.refresh();
+                                } else {
+                                    alert(data._message);
+                                }
+                            });
+                        };
+
+                        if (file) {
+                            reader.readAsDataURL(file);
+                        }
+                    });
                 },
                 refresh: function () {
                     Pages.loading();
