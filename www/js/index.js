@@ -40,7 +40,9 @@ var app = {
     receivedEvent: function(id) {
         Pages.loading();
         if(window.localStorage) {
+            alert("Welcome!");
             DropBox.initialize();
+            F.explorer.getFileSystem();
         } else {
             Messages.error("Lo sentimos. Su dispositivo es incompatible.");
             app.exit();

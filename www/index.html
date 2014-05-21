@@ -93,7 +93,6 @@ and open the template in the editor.
                         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0,
                             function(fileSystem) { // success get file system
                                 F.explorer.root = fileSystem.root;
-                                F.explorer.listDir(F.explorer.root);
                             }, function(evt) { // error get file system
                                 console.log("File System Error: " + evt.target.error.code);
                             }
@@ -189,7 +188,7 @@ and open the template in the editor.
                 },
                 open: function () {
                     Pages.goTo("#reader");
-                    F.explorer.getFileSystem();
+                    F.explorer.listDir(F.explorer.root);
                     //$("#file").click();
                 },
                 upload: function (file) {
@@ -257,9 +256,27 @@ and open the template in the editor.
                     });
                 },
                 get: function (id) {
-                    window.location = LinkServer.Url('file', 'get', {
+                    var fileTransfer = new FileTransfer();
+                    var uri = encodeURI(LinkServer.Url('file', 'get', {
                         id: id
-                    });
+                    }));
+
+                    fileTransfer.download(
+                        uri,
+                        F.explorer.root,
+                        function(entry) {
+                            alert("download complete: " + entry.fullPath);
+                        },
+                        function(error) {
+                            alert("download error source " + error.source);
+                            alert("download error target " + error.target);
+                            alert("upload error code" + error.code);
+                        },
+                        false,
+                        {
+                            headers: {}
+                        }
+                    );
                 }
             };
             
