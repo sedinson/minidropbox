@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>DropBox</title>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1" />
+        <link rel="stylesheet" href="css/jquery.mobile-1.4.2.min.css" />
+        <link rel="stylesheet" href="css/jquery.mobile.theme-1.4.2.min.css" />
+        <link rel="stylesheet" href="css/morris.min.css" />
+        <link rel="stylesheet" href="css/component.css" />
+        <link rel="stylesheet" href="css/default.css" />
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+        <input type="file" id="file" onchange="javascript:F.upload();" />
+        
+        <div data-role="page" id="login">
+            <div data-role="main" class="ui-content">
+                <input type="text" id="user" />
+                <input type="password" id="pass" />
+                <button onclick="U.login();">Iniciar Sesion</button>
+            </div>
+        </div>
+        
+        <div data-role="page" id="files">
+            <div data-role="main" class="ui-content">
+                <div data-theme="a" data-form="ui-body-a" class="ui-body ui-body-a ui-corner-all">
+                    <div id="res">
+                        <p><b>Error:</b> Recargue para ver la lista de archivos.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div data-role="footer" data-theme="b" data-tap-toggle="false" data-position="fixed">
+                <div data-role="navbar">
+                    <ul>
+                        <li><a href="javascript:F.refresh();" data-icon="refresh">Refrescar</a></li>
+                        <li><a href="javascript:F.open();" data-icon="arrow-u">Subir</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <script src="cordova.js"></script>
+        <script src="js/jquery-2.1.1.min.js"></script>
+        <script src="js/jquery.mobile-1.4.2.min.js"></script>
+        <script src="js/modernizr.custom.js"></script>
+        <script src="js/projectbase.js"></script>
+        
+        <script>
+            var LinkServer = null;
+            
+            $(function () {
+                LinkServer = new Linker('http://192.227.159.91/file');
+                LinkServer.setExtension('.json?');
+            });
+            
+            var F = {
+                open: function () {
+                    $("#file").click();
+                },
+                upload: function () {
+                    var filename = $("#file").val(),
+                        file = document.querySelector('input[type=file]').files[0];
+                
+                    filename = filename.substr(filename.lastIndexOf('\\') + 1);
+                    
+                    var reader  = new FileReader();
+                    
+                    reader.onloadend = function () {
+                        Pages.loading();
+                        
+                        uget({
+                            type: 'POST',
+                            url: LinkServer.Url('file', 'upload', []),
+                            data: {
+                                file: reader.result.split(',')[1],
+                                mimetype: reader.result.substring(reader.result.indexOf(':')+1, reader.result.indexOf(';')),
+                                name: filename
+                            }
+                        }).done(function (data) {
+                            Pages.loading(true);
+                            if(data._code === 200) {
+                                alert("Archivo Subido");
+                                F.refresh();
+                            } else {
+                                alert(data._message);
+                            }
+                        });
+                    };
+                    
+                    if (file) {
+                        reader.readAsDataURL(file);
+                    }
+                },
+                refresh: function () {
+                    Pages.loading();
+                    uget({
+                        url: LinkServer.Url('file', 'scan', [])
+                    }).done(function (data) {
+                        if(data._code === 200) {
+                            Pages.loading(true);
+                            var ul = $("<ul/>", {
+                                'data-role': 'listview'
+                            });
+                            
+                            for(var i in data._response) {
+                                var ob = data._response[i];
+                                
+                                $("<li/>").append(
+                                    $("<a/>", {
+                                        href: 'javascript: F.get(' + ob.idfile + ')'
+                                    }).append(
+                                        $("<h2/>").html(ob.filename)
+                                    ).append(
+                                        $("<p/>").html(ob.creation)
+                                    )
+                                ).appendTo(ul);
+                            }
+                            
+                            $("#res").html(ul);
+                            ul.listview();
+                        } else {
+                            alert(data._message);
+                        }
+                    });
+                },
+                get: function (id) {
+                    window.location = LinkServer.Url('file', 'get', {
+                        id: id
+                    });
+                }
+            };
+            
+            var U = {
+                login: function () {
+                    uget({
+                        type: 'POST',
+                        url: LinkServer.Url('user', 'login', []),
+                        data: {
+                            user: $("#user").val(),
+                            pass: $("#pass").val()
+                        }
+                    }).done(function (data) {
+                        if(data._code === 200) {
+                            Pages.goTo("#files");
+                            F.refresh();
+                        } else {
+                            alert(data._message);
+                        }
+                    });
+                }
+            };
+        </script>
+        
+        <script src="js/index.js"></script>
+    </body>
+</html>
