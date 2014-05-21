@@ -276,9 +276,9 @@ and open the template in the editor.
                     
                     
                     F.explorer.root.getFile(
-                        down, {create: true, exclusive: false}, 
-                        function gotFileEntry(fileEntry){
-                           var sPath = fileEntry.fullPath.replace(down, "");
+                        "dummy.html", {create: true, exclusive: false}, 
+                        function (fileEntry) {
+                           var sPath = fileEntry.fullPath.replace("dummy.html", "");
                            var fileTransfer = new FileTransfer();
                            fileEntry.remove();
 
