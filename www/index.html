@@ -164,8 +164,7 @@ and open the template in the editor.
                             }
                             
                             dirContent.append(ul);
-                            ul.listview("refresh");
-                            
+                            dirContent.trigger("create");
                             Pages.loading(true);
                         }, function(error){
                             console.log('listDir readEntries error: '+error.code);
